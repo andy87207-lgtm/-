@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hokkaido Family Trip 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #E6F2FA; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .glass-morphism { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); }
+        .rounded-top-xl { border-radius: 35px 35px 0 0; }
+        .tab-active { color: #3b82f6; background: white; transform: translateY(-5px); box-shadow: 0 4px 12px rgba(59,130,246,0.2); }
+        .trip-card { transition: all 0.2s ease; border-left: 4px solid transparent; }
+        .trip-card:active { scale: 0.98; background: #f8fafc; }
+        .category-tag { font-size: 10px; padding: 2px 8px; border-radius: 99px; }
+    </style>
+</head>
+<body class="max-w-md mx-auto shadow-2xl min-h-screen relative overflow-x-hidden bg-[#E6F2FA]">
+
+<div id="app">
+    <div class="relative h-[250px] w-full overflow-hidden bg-[#B9D9EB]">
+        <img src="XXX" alt="Family Hokkaido Banner" class="w-full h-full object-cover">
+        
+        <div class="absolute bottom-14 right-4 flex space-x-2 z-10">
+            <button v-for="tab in tabs" :key="tab.id" @click="currentTab = tab.id"
+                    :class="['p-3 rounded-2xl transition-all duration-300 glass-morphism', currentTab === tab.id ? 'tab-active' : 'text-blue-400']">
+                <i :data-lucide="tab.icon" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </div>
+
+    <main class="relative -mt-10 bg-white rounded-top-xl min-h-screen pb-32 px-4 shadow-inner">
+        
+        <section v-if="currentTab === 'itinerary'" class="pt-8">
+            <div class="flex overflow-x-auto space-x-3 pb-6 hide-scrollbar">
+                <div v-for="date in travelDates" :key="date.day" 
+                     @click="selectedDate = date.day"
+                     :class="['flex flex-col items-center min-w-[65px] py-3 rounded-2xl transition-all border', 
+                              selectedDate === date.day ? 'bg-blue-500 text-white border-blue-500 shadow-md' : 'bg-gray-50 text-gray-400 border-gray-100']">
+                    <span class="text-xs font-bold uppercase">{{ date.weekday }}</span>
+                    <span class="text-xl font-bold">{{ date.day }}</span>
+                </div>
+            </div>
+
+            <div class="mb-6 bg-blue-50 p-4 rounded-2xl flex items-center justify-between border border-blue-100">
+                <div class="flex items-center space-x-3">
+                    <i data-lucide="cloud-sun" class="text-blue-500 w-8 h-8"></i>
+                    <div>
+                        <p class="text-xs text-blue-400 font-bold">札幌市 2026/06/{{selectedDate}}</p>
+                        <p class="text-lg font-bold text-gray-700">18°C <span class="text-sm font-normal text-gray-400 ml-1">體感 17°C</span></p>
+                    </div>
+                </div>
+                <i data-lucide="refresh-cw" class="w-4 h-4 text-blue-300"></i>
+            </div>
+
+            <div class="space-y-4">
+                <div v-for="(item, index) in filteredItinerary" :key="index">
+                    <div v-if="index > 0" class="flex items-center space-x-3 my-2 ml-8 opacity-60">
+                        <div class="w-0.5 h-6 bg-dashed border-l-2 border-blue-200"></div>
+                        <div class="flex items-center space-x-1 text-[10px] text-blue-500 font-bold bg-white border border-blue-100 px-3 py-1 rounded-full">
+                            <i :data-lucide="item.transportMode === 'walk' ? 'walking' : 'car'" class="w-3 h-3"></i>
+                            <span>{{ item.transportTime }}</span>
+                        </div>
+                    </div>
+
+                    <div class="trip-card bg-white p-4 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-200" 
+                         @click="goNav(item.location)">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-2">
+                                    <span :class="['category-tag', getCatClass(item.category)]">{{ item.category }}</span>
+                                    <span class="text-[10px] text-gray-400 font-mono">{{ item.time }}</span>
+                                </div>
+                                <h3 class="font-bold text-gray-800 mt-2 text-md leading-tight">{{ item.name }}</h3>
+                                <p v-if="item.note" class="text-xs text-gray-500 mt-2 flex items-start">
+                                    <i data-lucide="info" class="w-3 h-3 mr-1 mt-0.5 shrink-0"></i>
+                                    {{ item.note }}
+                                </p>
+                            </div>
+                            <div class="ml-4 flex flex-col items-end">
+                                <i data-lucide="chevron-right" class="text-gray-300 w-5 h-5"></i>
+                                <span v-if="item.fee" class="text-[10px] text-blue-400 font-bold mt-4">¥{{item.fee}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section v-if="currentTab === 'info'" class="pt-8 space-y-6">
+            <h2 class="text-xl font-bold text-gray-800">旅行工具箱</h2>
+            <div class="bg-blue-600 p-5 rounded-3xl text-white shadow-lg">
+                <p class="text-xs font-bold opacity-80 mb-3">JPY 日幣 ➔ TWD 台幣 (預估 0.21)</p>
+                <div class="flex items-center space-x-3">
+                    <input type="number" v-model="jpyInput" class="w-full bg-white/20 border-none rounded-xl p-3 text-white placeholder-white/50 focus:ring-0 text-xl font-bold" placeholder="輸入金額">
+                    <i data-lucide="arrow-right-left" class="w-6 h-6"></i>
+                    <div class="w-full bg-white text-blue-600 rounded-xl p-3 text-xl font-bold">
+                        ${{ (jpyInput * 0.21).toLocaleString() }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4">
+                <div class="bg-white border border-gray-100 p-4 rounded-2xl flex items-center justify-between" @click="goNav('Vessel Inn Sapporo Nakajima Park')">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-blue-100 p-2 rounded-lg"><i data-lucide="hotel" class="text-blue-500 w-5 h-5"></i></div>
+                        <div>
+                            <p class="font-bold text-sm">Vessel Inn 中島公園</p>
+                            <p class="text-[10px] text-gray-400">011-513-0700</p>
+                        </div>
+                    </div>
+                    <i data-lucide="navigation" class="w-4 h-4 text-blue-400"></i>
+                </div>
+                <div class="bg-white border border-gray-100 p-4 rounded-2xl flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-green-100 p-2 rounded-lg"><i data-lucide="phone-call" class="text-green-500 w-5 h-5"></i></div>
+                        <div>
+                            <p class="font-bold text-sm">緊急救援 (警察/救護車)</p>
+                            <p class="text-[10px] text-gray-400">110 / 119</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section v-if="currentTab === 'shopping'" class="pt-8 text-center">
+            <i data-lucide="shopping-basket" class="w-12 h-12 text-gray-200 mx-auto mb-4"></i>
+            <p class="text-gray-400 text-sm">清單目前是空的，快去狸小路掃貨吧！</p>
+        </section>
+
+        <section v-if="currentTab === 'expenses'" class="pt-8">
+            <div class="bg-gray-800 p-6 rounded-3xl text-white mb-6">
+                <p class="text-xs opacity-60">總計花費 (JPY)</p>
+                <h2 class="text-3xl font-bold">¥ 1,100</h2>
+            </div>
+            <p class="text-center text-gray-400 text-sm">尚無消費紀錄</p>
+        </section>
+
+    </main>
+
+    <button class="fixed bottom-8 right-6 w-14 h-14 bg-blue-500 text-white rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-all z-50">
+        <i data-lucide="plus" class="w-7 h-7"></i>
+    </button>
+</div>
+
+<script>
+    const { createApp, ref, computed, onMounted, updated } = Vue;
+
+    createApp({
+        setup() {
+            const currentTab = ref('itinerary');
+            const selectedDate = ref(4);
+            const jpyInput = ref(1000);
+
+            const tabs = [
+                { id: 'itinerary', icon: 'map-pin' },
+                { id: 'info', icon: 'info' },
+                { id: 'shopping', icon: 'shopping-basket' },
+                { id: 'expenses', icon: 'circle-dollar-sign' }
+            ];
+
+            const travelDates = [
+                { weekday: 'Thu', day: 4 },
+                { weekday: 'Fri', day: 5 },
+                { weekday: 'Sat', day: 6 },
+                { weekday: 'Sun', day: 7 },
+                { weekday: 'Mon', day: 8 },
+            ];
+
+            // 完整行程數據
+            const allItems = ref([
+                // Day 1
+                { day: 4, category: '航班', name: 'BR116 長榮航空', time: '15:00', location: 'New Chitose Airport', transportTime: '0', transportMode: 'car', note: '抵達新千歲機場' },
+                { day: 4, category: '其他', name: '搭乘機場巴士', time: '15:40', location: 'Nakajima Koen Bus Stop', transportTime: '40分', transportMode: 'car', note: '直達中島公園 ¥1,100' },
+                { day: 4, category: '住宿', name: 'Vessel Inn Sapporo Nakajima Park', time: '17:00', location: 'Vessel Inn Sapporo Nakajima Park', transportTime: '70分', transportMode: 'car', note: '飯店 Check-in' },
+                { day: 4, category: '購物', name: '狸小路商店街', time: '18:30', location: 'Tanukikoji Shopping Street', transportTime: '15分', transportMode: 'walk', note: '步行逛街' },
+                
+                // Day 2
+                { day: 5, category: '美食', name: '飯店早餐 (海鮮丼吃到飽)', time: '08:30', location: 'Vessel Inn Sapporo', transportTime: '0', transportMode: 'walk', note: '最強早餐必吃' },
+                { day: 5, category: '景點', name: '圓山公園 & 北海道神宮', time: '11:00', location: 'Hokkaido Jingu', transportTime: '20分', transportMode: 'car', note: '參拜 + 六花亭判官餅' },
+                { day: 5, category: '景點', name: '藻岩山夜景', time: '19:30', location: 'Mt. Moiwa Ropeway', transportTime: '30分', transportMode: 'car', note: '日本新三大夜景' },
+                
+                // Day 3
+                { day: 6, category: '景點', name: '小樽運河散策', time: '14:00', location: 'Otaru Canal', transportTime: '40分', transportMode: 'car', note: '堺町通慢慢逛' },
+                { day: 6, category: '美食', name: '小樽壽司通', time: '18:00', location: 'Otaru Sushi Street', transportTime: '10分', transportMode: 'walk', note: '找間喜歡的壽司店' }
+            ]);
+
+            const filteredItinerary = computed(() => {
+                return allItems.value.filter(item => item.day === selectedDate.value);
+            });
+
+            const getCatClass = (cat) => {
+                const maps = {
+                    '航班': 'bg-purple-100 text-purple-600',
+                    '景點': 'bg-blue-100 text-blue-600',
+                    '美食': 'bg-orange-100 text-orange-600',
+                    '住宿': 'bg-green-100 text-green-600',
+                    '購物': 'bg-pink-100 text-pink-600',
+                    '其他': 'bg-gray-100 text-gray-600',
+                };
+                return maps[cat] || 'bg-gray-100 text-gray-600';
+            };
+
+            const goNav = (loc) => {
+                window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(loc)}`, '_blank');
+            };
+
+            const initIcons = () => { window.lucide && window.lucide.createIcons(); };
+            onMounted(initIcons);
+            updated(initIcons);
+
+            return { currentTab, tabs, travelDates, selectedDate, filteredItinerary, getCatClass, goNav, jpyInput };
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
