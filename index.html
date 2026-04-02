@@ -22,16 +22,19 @@
 <body class="max-w-md mx-auto shadow-2xl min-h-screen relative overflow-x-hidden bg-[#E6F2FA]">
 
 <div id="app">
-    <div class="relative h-[250px] w-full overflow-hidden bg-[#B9D9EB]">
-        <img src="XXX" alt="Family Hokkaido Banner" class="w-full h-full object-cover">
-        
-        <div class="absolute bottom-14 right-4 flex space-x-2 z-10">
-            <button v-for="tab in tabs" :key="tab.id" @click="currentTab = tab.id"
-                    :class="['p-3 rounded-2xl transition-all duration-300 glass-morphism', currentTab === tab.id ? 'tab-active' : 'text-blue-400']">
-                <i :data-lucide="tab.icon" class="w-5 h-5"></i>
-            </button>
-        </div>
+    <div class="relative h-[250px] w-full overflow-hidden bg-gradient-to-br from-[#B9D9EB] to-[#FFFFFF] flex items-center justify-center">
+    <div class="text-center opacity-60">
+        <h1 class="text-blue-500 font-bold tracking-[0.2em] text-2xl">HOKKAIDO</h1>
+        <p class="text-blue-400 text-xs mt-1">FAMILY TRIP 2026</p>
     </div>
+    
+    <div class="absolute bottom-14 right-4 flex space-x-2 z-10">
+        <button v-for="tab in tabs" :key="tab.id" @click="currentTab = tab.id"
+                :class="['p-3 rounded-2xl transition-all duration-300 glass-morphism', currentTab === tab.id ? 'tab-active' : 'text-blue-400']">
+            <i :data-lucide="tab.icon" class="w-5 h-5"></i>
+        </button>
+    </div>
+</div>
 
     <main class="relative -mt-10 bg-white rounded-top-xl min-h-screen pb-32 px-4 shadow-inner">
         
